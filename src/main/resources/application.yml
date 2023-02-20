@@ -1,0 +1,21 @@
+# ============================================== #
+# User Management Portal [backend] Configuration #
+# ============================================== #
+
+spring:
+  application:
+    name: USER-MANAGEMENT-PORTAL
+  datasource:
+    url: jdbc:mysql://localhost:3306/user_mgmt_portal
+    username: root
+    password: admin
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      dialect: org.hibernate.dialect.MySQL8Dialect
+
+server:
+  port: 8881
+
