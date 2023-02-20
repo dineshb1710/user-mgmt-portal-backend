@@ -1,4 +1,4 @@
-package com.dineshb.projects.usermgmt.portal.response;
+package com.dineshb.projects.usermgmt.portal.model.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

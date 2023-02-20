@@ -38,7 +38,7 @@ public class User implements Serializable {
     private Date joiningDate;
 
     private String[] roles;
-    private String[] permissions;
+    private String[] authorities;
 
     private boolean isActive;
     private boolean isLocked;
