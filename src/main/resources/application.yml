@@ -2,6 +2,9 @@
 # User Management Portal [backend] Configuration #
 # ============================================== #
 
+jwt-config:
+  secret: gw3Gh6#eMT7rRk!-369e$0f7-SqCfmxNWrz@PF4K
+
 spring:
   application:
     name: USER-MANAGEMENT-PORTAL

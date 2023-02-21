@@ -7,7 +7,7 @@ public class SecurityConstants {
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String JWT_HEADER = "Jwt-Header";
     public static final String ISSUER = "EdgeSoft, LLC";
-    public static final String APPLICATION_NAME = "User Management Portal";
+    public static final String AUDIENCE = "User Management Portal";
     public static final String OPTIONS = "Options";
     public static final String AUTHORITIES = "authorities";
 
