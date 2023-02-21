@@ -18,6 +18,7 @@
     <properties>
         <java.version>11</java.version>
         <java.jwt.version>3.18.2</java.jwt.version>
+        <apache.common.lang.version>3.12.0</apache.common.lang.version>
     </properties>
 
     <!-- Dependencies goes here -->
@@ -38,6 +39,11 @@
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>${java.jwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${apache.common.lang.version}</version>
         </dependency>
 
         <dependency>
