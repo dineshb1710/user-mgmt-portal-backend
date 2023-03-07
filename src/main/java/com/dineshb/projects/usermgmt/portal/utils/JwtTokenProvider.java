@@ -24,8 +24,9 @@ import java.util.stream.Collectors;
 import static com.dineshb.projects.usermgmt.portal.constants.SecurityConstants.ISSUER;
 import static com.dineshb.projects.usermgmt.portal.constants.SecurityConstants.AUDIENCE;
 import static com.dineshb.projects.usermgmt.portal.constants.SecurityConstants.AUTHORITIES;
-import static com.dineshb.projects.usermgmt.portal.constants.SecurityConstants.EXPIRATION_TIME;
 import static com.dineshb.projects.usermgmt.portal.constants.SecurityConstants.CANNOT_VERIFY_TOKEN;
+import static com.dineshb.projects.usermgmt.portal.constants.SecurityConstants.EXPIRATION_TIME;
+import static com.dineshb.projects.usermgmt.portal.constants.SecurityConstants.TOKEN_EXPIRED;
 
 @Component
 public class JwtTokenProvider {
@@ -99,7 +100,7 @@ public class JwtTokenProvider {
                     .getExpiresAt()
                     .before(new Date());
         } catch (JWTVerificationException e) {
-            throw new JWTVerificationException(CANNOT_VERIFY_TOKEN);
+            throw new JWTVerificationException(TOKEN_EXPIRED);
         }
     }
 }

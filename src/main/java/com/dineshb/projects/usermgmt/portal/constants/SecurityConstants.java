@@ -12,6 +12,7 @@ public class SecurityConstants {
     public static final String AUTHORITIES = "authorities";
 
     public static final String CANNOT_VERIFY_TOKEN = "Token Cannot be verified !!";
+    public static final String TOKEN_EXPIRED = "Token has expired !!";
     public static final String FORBIDDEN_MESSAGE = "You need to login, access forbidden !!";
     public static final String UNAUTHORIZED_MESSAGE = "You do not have access to this resource, Access-Denied !!";
 
