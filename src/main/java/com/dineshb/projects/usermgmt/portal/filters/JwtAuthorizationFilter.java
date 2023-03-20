@@ -38,17 +38,18 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             String authorizationHeader = request.getHeader(AUTHORIZATION);
             if (authorizationHeader == null || !authorizationHeader.startsWith(TOKEN_PREFIX)) {
                 filterChain.doFilter(request, response);
-            }
-            String jwtToken = authorizationHeader.substring(TOKEN_PREFIX.length());
-            String userName = jwtTokenProvider.getSubjectFromToken(jwtToken);
-            // Now, check whether this token is valid (or) not !!
-            if(jwtTokenProvider.isValidToken(userName, jwtToken) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                List<GrantedAuthority> authorities = jwtTokenProvider.getClaimsFromToken(jwtToken);
-                Authentication authentication = jwtTokenProvider.getAuthentication(userName, authorities, request);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
             } else {
-                // Clear the SecurityContext..
-                SecurityContextHolder.clearContext();
+                String jwtToken = authorizationHeader.substring(TOKEN_PREFIX.length());
+                String userName = jwtTokenProvider.getSubjectFromToken(jwtToken);
+                // Now, check whether this token is valid (or) not !!
+                if(jwtTokenProvider.isValidToken(userName, jwtToken) && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    List<GrantedAuthority> authorities = jwtTokenProvider.getClaimsFromToken(jwtToken);
+                    Authentication authentication = jwtTokenProvider.getAuthentication(userName, authorities, request);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    // Clear the SecurityContext..
+                    SecurityContextHolder.clearContext();
+                }
             }
         }
         filterChain.doFilter(request, response);

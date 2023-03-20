@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Date;
 
 import static com.dineshb.projects.usermgmt.portal.constants.SecurityConstants.UNAUTHORIZED_MESSAGE;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -25,7 +26,8 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
                        AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
         // Build HttpResponse model..
-        HttpResponse httpResponse = new HttpResponse(UNAUTHORIZED.value(), UNAUTHORIZED.getReasonPhrase(), UNAUTHORIZED_MESSAGE, UNAUTHORIZED);
+        HttpResponse httpResponse = new HttpResponse(UNAUTHORIZED.value(), UNAUTHORIZED.getReasonPhrase(), UNAUTHORIZED_MESSAGE,
+                UNAUTHORIZED, new Date());
         response.setContentType(APPLICATION_JSON_VALUE);
         response.setStatus(UNAUTHORIZED.value());
         OutputStream outputStream = response.getOutputStream();
