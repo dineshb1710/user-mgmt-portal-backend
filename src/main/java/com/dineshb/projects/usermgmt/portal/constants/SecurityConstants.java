@@ -16,6 +16,6 @@ public class SecurityConstants {
     public static final String FORBIDDEN_MESSAGE = "You need to login, access forbidden !!";
     public static final String UNAUTHORIZED_MESSAGE = "You do not have access to this resource, Access-Denied !!";
 
-    public static final String[] PUBLIC_URLS = {"/api/v1/user/login", "/api/v1/user/register", "/api/v1/user/forgot/**"};
+    public static final String[] PUBLIC_URLS = {"**"};
 
 }

@@ -1,5 +1,6 @@
 package com.dineshb.projects.usermgmt.portal.controller;
 
+import com.dineshb.projects.usermgmt.portal.exception.EmailNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,6 @@ public class UserController {
 
     @GetMapping("/")
     public String welcome() {
-        return "Welcome to User Management Portal !!";
+        throw new EmailNotFoundException("No valid emails found !!");
     }
 }

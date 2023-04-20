@@ -2,6 +2,7 @@ package com.dineshb.projects.usermgmt.portal.filters.entryPoint;
 
 import com.dineshb.projects.usermgmt.portal.model.response.HttpResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import static com.dineshb.projects.usermgmt.portal.constants.SecurityConstants.F
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+@Slf4j
 @Component
 public class JwtAuthenticationEntryPoint extends Http403ForbiddenEntryPoint {
 
@@ -23,6 +25,8 @@ public class JwtAuthenticationEntryPoint extends Http403ForbiddenEntryPoint {
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authenticationException) throws IOException {
+
+        log.info("MSG='Inside JwtAuthenticationEntryPoint', request={}, method={}", request.getRequestURI(), request.getMethod());
 
         // Build HttpResponse model..
         HttpResponse httpResponse = new HttpResponse(FORBIDDEN.value(), FORBIDDEN.getReasonPhrase(), FORBIDDEN_MESSAGE, FORBIDDEN, new Date());
