@@ -2,10 +2,7 @@ package com.dineshb.projects.usermgmt.portal.advice;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.dineshb.projects.usermgmt.portal.constants.AdviceConstants;
-import com.dineshb.projects.usermgmt.portal.exception.EmailExistException;
-import com.dineshb.projects.usermgmt.portal.exception.EmailNotFoundException;
-import com.dineshb.projects.usermgmt.portal.exception.UserExistException;
-import com.dineshb.projects.usermgmt.portal.exception.UserNotFoundException;
+import com.dineshb.projects.usermgmt.portal.exception.*;
 import com.dineshb.projects.usermgmt.portal.model.response.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -25,15 +22,11 @@ import java.util.Date;
 import java.util.Objects;
 
 import static com.dineshb.projects.usermgmt.portal.constants.AdviceConstants.*;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.*;
 
 @Slf4j
 @ControllerAdvice
-public class UserControllerAdvice {
+public class GlobalControllerAdvice {
 
     @ExceptionHandler(value = DisabledException.class)
     private ResponseEntity<HttpResponse> accountDisabledExceptionHandler() {
@@ -102,6 +95,12 @@ public class UserControllerAdvice {
     private ResponseEntity<HttpResponse> internalServerErrorExceptionHandler(final Exception exception) {
         log.error("MSG='Exception Occurred', message={}", exception.getMessage().toUpperCase());
         return buildResponseEntityWith(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
+    }
+
+    @ExceptionHandler(value = HandlerNotFoundException.class)
+    private ResponseEntity<HttpResponse> handlerNotFoundException(final HandlerNotFoundException handlerNotFoundException) {
+        log.error("MSG='Exception Occurred', message={}", handlerNotFoundException.getMessage().toUpperCase());
+        return buildResponseEntityWith(NOT_FOUND, NO_VALID_MAPPING_FOUND);
     }
 
     private ResponseEntity<HttpResponse> buildResponseEntityWith(HttpStatus httpStatus, String message) {
