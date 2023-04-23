@@ -10,4 +10,5 @@ public class AdviceConstants {
     public static final String ERROR_PROCESSING_FILE = "Error occurred while processing file.";
     public static final String NOT_ENOUGH_PERMISSION = "You do not have enough permission.";
     public static final String NO_VALID_MAPPING_FOUND = "No valid mapping found !!";
+    public static final String CANNOT_REGISTER_USER = "User cannot be registered, please try again !!";
 }

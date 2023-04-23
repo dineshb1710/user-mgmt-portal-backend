@@ -1,9 +1,6 @@
 package com.dineshb.projects.usermgmt.portal.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,6 +13,7 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class User implements Serializable {
@@ -37,7 +35,7 @@ public class User implements Serializable {
     private Date lastLoginDateDisplay;
     private Date joiningDate;
 
-    private String[] roles;
+    private String role;
     private String[] authorities;
 
     private boolean isActive;

@@ -103,6 +103,12 @@ public class GlobalControllerAdvice {
         return buildResponseEntityWith(NOT_FOUND, NO_VALID_MAPPING_FOUND);
     }
 
+    @ExceptionHandler(value = CannotRegisterException.class)
+    private ResponseEntity<HttpResponse> cannotRegisterException(final CannotRegisterException cannotRegisterException) {
+        log.error("MSG='Exception Occurred', message={}", cannotRegisterException.getMessage().toUpperCase());
+        return buildResponseEntityWith(BAD_REQUEST, CANNOT_REGISTER_USER);
+    }
+
     private ResponseEntity<HttpResponse> buildResponseEntityWith(HttpStatus httpStatus, String message) {
         HttpResponse httpResponse = new HttpResponse(httpStatus.value(), httpStatus.getReasonPhrase().toUpperCase(),
                 message.toUpperCase(), httpStatus, new Date());
