@@ -1,26 +1,19 @@
 package com.dineshb.projects.usermgmt.portal.service.impl;
 
-import com.dineshb.projects.usermgmt.portal.enums.Role;
-import com.dineshb.projects.usermgmt.portal.exception.CannotRegisterException;
-import com.dineshb.projects.usermgmt.portal.exception.EmailExistException;
-import com.dineshb.projects.usermgmt.portal.exception.UserExistException;
+import com.dineshb.projects.usermgmt.portal.exception.*;
 import com.dineshb.projects.usermgmt.portal.model.User;
 import com.dineshb.projects.usermgmt.portal.repo.UserRepository;
 import com.dineshb.projects.usermgmt.portal.service.UserService;
 import com.dineshb.projects.usermgmt.portal.utils.UserRegistrationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-import static com.dineshb.projects.usermgmt.portal.constants.ApplicationConstants.USER_EMAIL_ALREADY_EXIST;
-import static com.dineshb.projects.usermgmt.portal.constants.ApplicationConstants.USER_WITH_USERNAME_ALREADY_EXIST;
-import static com.dineshb.projects.usermgmt.portal.constants.ApplicationConstants.CANNOT_REGISTER_USER_DUE_TO_INVALID_INPUT;
+import static com.dineshb.projects.usermgmt.portal.constants.ApplicationConstants.*;
 
 @Slf4j
 @Service
@@ -33,11 +26,46 @@ public class UserServiceImpl implements UserService {
     @Override
     public User register(final String firstName, final String lastName, final String username, final String email) {
         log.info("MSG='Preparing for registration', firstName={}, lastName={}, username={}, email={}", firstName, lastName, username, email);
-        if (!validUserInformationProvided(firstName, username, email)) {
+        if (!validUserInformationProvided(StringUtils.EMPTY, firstName, lastName, username, email)) {
             throw new CannotRegisterException(CANNOT_REGISTER_USER_DUE_TO_INVALID_INPUT);
         }
-        // Continue with registration..
+        // build & register User..
         return buildAndRegisterUser(firstName, lastName, username, email);
+    }
+
+    private User buildAndRegisterUser(final String firstName, final String lastName, final String username, final String email) {
+        final String password = RandomStringUtils.randomAlphabetic(10);
+        User newUser = userRepository.save(userRegistrationUtils.buildUser(firstName, lastName, username, email, password));
+        log.info("MSG='User registered successfully', firstName={}, lastName={}, username={}, password={}, email={}", firstName, lastName, username, password, email);
+        return newUser;
+    }
+
+    private boolean validUserInformationProvided(final String currentUserName, final String firstName, final String lastName, final String username, final String email) {
+        log.info("MSG='Validating user', currentUserName={}, firstName={}, lastName={}, username={}, email={}", currentUserName, firstName, lastName, username, email);
+        if (!StringUtils.isBlank(currentUserName)) {
+            return validateExistingUser(currentUserName, email);
+        }
+        return validateNewUserForRegistration(username, email);
+    }
+
+    private boolean validateNewUserForRegistration(final String newUserName, final String email) {
+        if (findUserByUsername(newUserName) != null) {
+            throw new UserExistException(USER_ALREADY_EXIST);
+        }
+        if (findUserByEmail(email) != null) {
+            throw new EmailExistException(USER_WITH_EMAIL_ALREADY_EXIST);
+        }
+        return true;
+    }
+
+    private boolean validateExistingUser(final String currentUserName, final String email) {
+        if (findUserByUsername(currentUserName) == null) {
+            throw new UserNotFoundException(USER_DOES_NT_EXIST);
+        }
+        if (findUserByEmail(email) == null) {
+            throw new EmailNotFoundException(USER_WITH_EMAIL_DOES_NT_EXIST);
+        }
+        return true;
     }
 
     @Override
@@ -60,39 +88,5 @@ public class UserServiceImpl implements UserService {
             throw new EmailExistException(USER_EMAIL_ALREADY_EXIST);
         }
         return null;
-    }
-
-    @Override
-    public List<User> getAll() {
-        return userRepository.findAll();
-    }
-
-    private boolean validUserInformationProvided(final String firstName, final String username, final String email) {
-        log.info("MSG='Validating user information for registration', firstName={}, username={}, email={}", firstName, username, email);
-        return requiredPropertiesValid(firstName, username, email)
-                && findUserByEmail(email) == null
-                && findUserByUsername(username) == null;
-    }
-
-    private boolean requiredPropertiesValid(final String firstName, final String username, final String email) {
-        return !StringUtils.isEmpty(firstName) && !StringUtils.isEmpty(username) && !StringUtils.isEmpty(email);
-    }
-
-    private User buildAndRegisterUser(final String firstName, final String lastName, final String username, final String email) {
-        User newUser = User.builder()
-                .userId(UUID.randomUUID().toString())
-                .firstName(firstName)
-                .lastName(lastName)
-                .username(username)
-                .email(email)
-                .password(userRegistrationUtils.getEncodedPassword())
-                .isActive(true)
-                .isLocked(false)
-                .joiningDate(new Date())
-                .role(Role.SIMPLE_USER.name())
-                .authorities(Role.SIMPLE_USER.getAuthorities())
-                .profileImageUrl(userRegistrationUtils.getTemporaryProfileImageUrl())
-                .build();
-        return userRepository.save(newUser);
     }
 }

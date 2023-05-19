@@ -22,7 +22,6 @@ import static com.dineshb.projects.usermgmt.portal.constants.ApplicationConstant
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-
     private final UserRepository userRepository;
 
     @Override

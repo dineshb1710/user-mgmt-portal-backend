@@ -4,6 +4,7 @@ import com.dineshb.projects.usermgmt.portal.model.User;
 import com.dineshb.projects.usermgmt.portal.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,6 @@ public class UserController {
     public ResponseEntity<User> registerUser(@RequestBody User user) {
         log.info("MSG='Started new User registration'");
         User registeredUser = userService.register(user.getFirstName(), user.getLastName(), user.getUsername(), user.getEmail());
-        return ResponseEntity.ok(registeredUser);
+        return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
     }
 }
