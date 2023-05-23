@@ -3,6 +3,9 @@ package com.dineshb.projects.usermgmt.portal.utils;
 import com.dineshb.projects.usermgmt.portal.enums.Role;
 import com.dineshb.projects.usermgmt.portal.model.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -17,6 +20,7 @@ import static com.dineshb.projects.usermgmt.portal.constants.ApplicationConstant
 public class UserRegistrationUtils {
 
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     private String getTemporaryProfileImageUrl() {
         return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH).toUriString();
@@ -42,4 +46,9 @@ public class UserRegistrationUtils {
                 .profileImageUrl(getTemporaryProfileImageUrl())
                 .build();
     }
+
+    public Authentication authenticateUser(final String username, final String password) {
+        return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+    }
+
 }

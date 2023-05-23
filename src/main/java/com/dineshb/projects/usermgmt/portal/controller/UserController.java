@@ -1,14 +1,17 @@
 package com.dineshb.projects.usermgmt.portal.controller;
 
 import com.dineshb.projects.usermgmt.portal.model.User;
+import com.dineshb.projects.usermgmt.portal.model.security.UserPrincipal;
 import com.dineshb.projects.usermgmt.portal.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static com.dineshb.projects.usermgmt.portal.constants.EndpointConstants.USERS_V1;
+import static com.dineshb.projects.usermgmt.portal.constants.SecurityConstants.JWT_HEADER;
 
 @Slf4j
 @RestController
@@ -28,5 +31,15 @@ public class UserController {
         log.info("MSG='Started new User registration'");
         User registeredUser = userService.register(user.getFirstName(), user.getLastName(), user.getUsername(), user.getEmail());
         return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<User> loginUser(@RequestBody User user) {
+        log.info("MSG='Started User login', username={}", user.getUsername());
+        User loggedInUser = userService.login(user.getUsername(), user.getPassword());
+        String jwtToken = userService.getJwtToken(new UserPrincipal(loggedInUser));
+        HttpHeaders jwtHeaders = new HttpHeaders();
+        jwtHeaders.add(JWT_HEADER, jwtToken);
+        return new ResponseEntity<>(loggedInUser, jwtHeaders, HttpStatus.ACCEPTED);
     }
 }

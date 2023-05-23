@@ -1,6 +1,7 @@
 package com.dineshb.projects.usermgmt.portal.service;
 
 import com.dineshb.projects.usermgmt.portal.model.User;
+import com.dineshb.projects.usermgmt.portal.model.security.UserPrincipal;
 
 public interface UserService {
 
@@ -9,4 +10,8 @@ public interface UserService {
     User findUserByUsername(String username);
 
     User findUserByEmail(String email);
+
+    User login(String username, String password);
+
+    String getJwtToken(UserPrincipal userPrincipal);
 }

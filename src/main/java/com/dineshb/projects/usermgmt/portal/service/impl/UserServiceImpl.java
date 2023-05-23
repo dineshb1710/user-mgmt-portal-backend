@@ -2,13 +2,16 @@ package com.dineshb.projects.usermgmt.portal.service.impl;
 
 import com.dineshb.projects.usermgmt.portal.exception.*;
 import com.dineshb.projects.usermgmt.portal.model.User;
+import com.dineshb.projects.usermgmt.portal.model.security.UserPrincipal;
 import com.dineshb.projects.usermgmt.portal.repo.UserRepository;
 import com.dineshb.projects.usermgmt.portal.service.UserService;
+import com.dineshb.projects.usermgmt.portal.utils.JwtTokenProvider;
 import com.dineshb.projects.usermgmt.portal.utils.UserRegistrationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,6 +25,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserRegistrationUtils userRegistrationUtils;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Override
     public User register(final String firstName, final String lastName, final String username, final String email) {
@@ -88,5 +92,17 @@ public class UserServiceImpl implements UserService {
             throw new EmailExistException(USER_EMAIL_ALREADY_EXIST);
         }
         return null;
+    }
+
+    @Override
+    public User login(String username, String password) {
+        userRegistrationUtils.authenticateUser(username, password);
+        log.info("MSG='User authentication successful !!'");
+        return userRepository.findUserByUsername(username).get();
+    }
+
+    @Override
+    public String getJwtToken(UserPrincipal userPrincipal) {
+        return jwtTokenProvider.generateJwtToken(userPrincipal);
     }
 }
