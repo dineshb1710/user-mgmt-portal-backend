@@ -1,5 +1,6 @@
 package com.dineshb.projects.usermgmt.portal.service.impl;
 
+import com.dineshb.projects.usermgmt.portal.cache.UserLoginCacheService;
 import com.dineshb.projects.usermgmt.portal.model.User;
 import com.dineshb.projects.usermgmt.portal.model.security.UserPrincipal;
 import com.dineshb.projects.usermgmt.portal.repo.UserRepository;
@@ -23,6 +24,7 @@ import static com.dineshb.projects.usermgmt.portal.constants.ApplicationConstant
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final UserLoginCacheService userLoginCacheService;
 
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
@@ -35,9 +37,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         // Update user with login details..
         User user = optionalUser.get();
         user.setLastLoginDate(new Date());
+
+        // Update user with respect to login-attempt(s)..
+        validateUserLoginAttempts(user);
         userRepository.save(user);
 
         // Build UserDetails object & return..
         return new UserPrincipal(user);
+    }
+
+    private void validateUserLoginAttempts(User user) {
+        if (!user.isLocked()) {
+            if (userLoginCacheService.hasExceededMaxAttempts(user.getUsername())) {
+                user.setLocked(true);
+            }
+        } else {
+            userLoginCacheService.invalidateUserFromCache(user.getUsername());
+        }
     }
 }
