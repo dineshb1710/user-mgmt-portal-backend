@@ -4,6 +4,7 @@ import com.dineshb.projects.usermgmt.portal.exception.*;
 import com.dineshb.projects.usermgmt.portal.model.User;
 import com.dineshb.projects.usermgmt.portal.model.security.UserPrincipal;
 import com.dineshb.projects.usermgmt.portal.repo.UserRepository;
+import com.dineshb.projects.usermgmt.portal.service.EmailService;
 import com.dineshb.projects.usermgmt.portal.service.UserService;
 import com.dineshb.projects.usermgmt.portal.utils.JwtTokenProvider;
 import com.dineshb.projects.usermgmt.portal.utils.UserRegistrationUtils;
@@ -11,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -26,9 +26,11 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserRegistrationUtils userRegistrationUtils;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EmailService emailService;
 
     @Override
-    public User register(final String firstName, final String lastName, final String username, final String email) {
+    public User register(final String firstName, final String lastName,
+                         final String username, final String email) {
         log.info("MSG='Preparing for registration', firstName={}, lastName={}, username={}, email={}", firstName, lastName, username, email);
         if (!validUserInformationProvided(StringUtils.EMPTY, firstName, lastName, username, email)) {
             throw new CannotRegisterException(CANNOT_REGISTER_USER_DUE_TO_INVALID_INPUT);
@@ -37,10 +39,12 @@ public class UserServiceImpl implements UserService {
         return buildAndRegisterUser(firstName, lastName, username, email);
     }
 
-    private User buildAndRegisterUser(final String firstName, final String lastName, final String username, final String email) {
+    private User buildAndRegisterUser(final String firstName, final String lastName,
+                                      final String username, final String email) {
         final String password = RandomStringUtils.randomAlphabetic(10);
         User newUser = userRepository.save(userRegistrationUtils.buildUser(firstName, lastName, username, email, password));
         log.info("MSG='User registered successfully', firstName={}, lastName={}, username={}, password={}, email={}", firstName, lastName, username, password, email);
+        emailService.sendUserRegistrationEmail(firstName, lastName, username, email, password);
         return newUser;
     }
 
