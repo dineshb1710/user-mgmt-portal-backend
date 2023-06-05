@@ -3,6 +3,7 @@ package com.dineshb.projects.usermgmt.portal.controller;
 import com.dineshb.projects.usermgmt.portal.model.User;
 import com.dineshb.projects.usermgmt.portal.model.security.UserPrincipal;
 import com.dineshb.projects.usermgmt.portal.service.UserService;
+import com.dineshb.projects.usermgmt.portal.utils.UserServiceUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import static com.dineshb.projects.usermgmt.portal.constants.SecurityConstants.J
 public class UserController {
 
     private final UserService userService;
+    private final UserServiceUtils userServiceUtils;
 
     @GetMapping("/home")
     public String home() {
@@ -37,7 +39,7 @@ public class UserController {
     public ResponseEntity<User> loginUser(@RequestBody User user) {
         log.info("MSG='Started User login', username={}", user.getUsername());
         User loggedInUser = userService.login(user.getUsername(), user.getPassword());
-        String jwtToken = userService.getJwtToken(new UserPrincipal(loggedInUser));
+        String jwtToken = userServiceUtils.getJwtToken(new UserPrincipal(loggedInUser));
         HttpHeaders jwtHeaders = new HttpHeaders();
         jwtHeaders.add(JWT_HEADER, jwtToken);
         return new ResponseEntity<>(loggedInUser, jwtHeaders, HttpStatus.ACCEPTED);

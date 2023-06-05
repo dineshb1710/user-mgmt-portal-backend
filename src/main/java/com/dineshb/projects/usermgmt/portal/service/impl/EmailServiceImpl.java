@@ -23,28 +23,45 @@ public class EmailServiceImpl implements EmailService {
     public void sendUserRegistrationEmail(String firstName, String lastName,
                                           String username, String email, String password) {
 
-        SimpleMailMessage message = createEmailMessage(firstName, lastName, username, email, password);
-        javaMailSender.send(message);
-    }
-
-
-    private SimpleMailMessage createEmailMessage(final String firstName, final String lastName, final String username,
-                                                 final String email, final String password) {
-
         SimpleMailMessage emailMessage = new SimpleMailMessage();
         emailMessage.setFrom(FROM_EMAIL);
         emailMessage.setTo(email);
         emailMessage.setSubject(EMAIL_SUBJECT);
         emailMessage.setText(getRegistrationEmailText(firstName, lastName, username, password));
         emailMessage.setSentDate(new Date());
-        return emailMessage;
+        javaMailSender.send(emailMessage);
     }
+
+    @Override
+    public void sendPasswordResetEmail(String firstName, String lastName, String username, String email, String password) {
+        SimpleMailMessage emailMessage = new SimpleMailMessage();
+        emailMessage.setFrom(FROM_EMAIL);
+        emailMessage.setTo(email);
+        emailMessage.setSubject(EMAIL_SUBJECT);
+        emailMessage.setText(getPasswordResetEmailText(firstName, lastName, username, password));
+        emailMessage.setSentDate(new Date());
+        javaMailSender.send(emailMessage);
+    }
+
 
     private String getRegistrationEmailText(final String firstName, final String lastName,
                                             final String username, final String password) {
-        return "Dear " + firstName + " " + lastName +"," + "\n" +
+        return "Dear " + firstName + " " + lastName + "," + "\n" +
                 "You have been registered to the User Management Portal. \n" +
                 "Below are your credentials to login. \n" +
+                "Username : " + username + "\n" +
+                "Password : " + password + "\n" +
+                "\n" +
+                "\n" +
+                "Regards," +
+                "Team JBSoft Inc.";
+    }
+
+    private String getPasswordResetEmailText(final String firstName, final String lastName,
+                                             final String username, final String password) {
+        return "Dear " + firstName + " " + lastName + "," + "\n" +
+                "Your Password has been changed !! \n" +
+                "Below are your new credentials to login. \n" +
                 "Username : " + username + "\n" +
                 "Password : " + password + "\n" +
                 "\n" +
