@@ -100,7 +100,7 @@ public class UserServiceUtils {
     }
 
     private String getTemporaryProfileImageUrl(String username) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH + username).toUriString();
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(TEMP_USER_IMAGE_PATH + username).toUriString();
     }
 
     public User updateUserWithProfileImage(User user, MultipartFile profileImage) throws IOException {

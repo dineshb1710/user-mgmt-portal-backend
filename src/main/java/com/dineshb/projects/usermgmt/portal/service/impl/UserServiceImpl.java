@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import static com.dineshb.projects.usermgmt.portal.constants.ApplicationConstants.*;
@@ -164,4 +165,18 @@ public class UserServiceImpl implements UserService {
                 existingUser.getEmail(), existingUser.getPassword());
     }
 
+    @Override
+    public User findUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(
+                () -> {
+                    throw new UserNotFoundException(USER_DOES_NT_EXIST);
+                }
+        );
+    }
+
+    @Override
+    public List<User> findAll() {
+        log.info("MSG='Returning all users from the database', query=/all");
+        return userRepository.findAll();
+    }
 }
