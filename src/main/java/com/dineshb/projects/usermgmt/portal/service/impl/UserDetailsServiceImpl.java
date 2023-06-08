@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Date;
-import java.util.Optional;
 
 import static com.dineshb.projects.usermgmt.portal.constants.ApplicationConstants.USERNAME_DOES_NOT_EXIST;
 
@@ -29,13 +28,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
         log.info("MSG='Trying to find user with name', username={}", username);
-        Optional<User> optionalUser = userRepository.findUserByUsername(username);
-        if (!optionalUser.isPresent()) {
+        User user = userRepository.findUserByUsername(username);
+        if (user == null) {
             log.error("MSG='User with name {} doesn't exist !!'", username);
             throw new UsernameNotFoundException(USERNAME_DOES_NOT_EXIST);
         }
         // Update user with login details..
-        User user = optionalUser.get();
         user.setLastLoginDate(new Date());
 
         // Update user with respect to login-attempt(s)..

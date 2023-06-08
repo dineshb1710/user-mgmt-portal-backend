@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User register(final String firstName, final String lastName, final String username, final String email) {
         log.info("MSG='Preparing for registration', firstName={}, lastName={}, username={}, email={}", firstName, lastName, username, email);
-        if (!validUserInformationProvided(EMPTY, firstName, lastName, username, email)) {
+        if (validUserInformationProvided(EMPTY, firstName, lastName, username, email) != null) {
             throw new CannotRegisterException(CANNOT_REGISTER_USER_DUE_TO_INVALID_INPUT);
         }
         // build & register User..
@@ -49,63 +49,61 @@ public class UserServiceImpl implements UserService {
         return registeredUser;
     }
 
-    private boolean validUserInformationProvided(final String currentUserName, final String firstName, final String lastName,
-                                                 final String username, final String email) {
+    private User validUserInformationProvided(final String currentUserName, final String firstName, final String lastName,
+                                              final String username, final String email) {
         log.info("MSG='Validating user', currentUserName={}, firstName={}, lastName={}, username={}, email={}", currentUserName, firstName,
                 lastName, username, email);
+        User userByEmail = findUserByEmail(email);
+        User userByUserName = findUserByUsername(username);
         if (!StringUtils.isBlank(currentUserName)) {
-            return validateExistingUser(currentUserName, email);
+            User userByCurrentUserName = findUserByUsername(currentUserName);
+            return validateExistingUser(userByCurrentUserName, userByUserName, userByEmail);
         }
-        return validateNewUserForRegistration(username, email);
+        return validateNewUserForRegistration(userByUserName, userByEmail);
     }
 
-    private boolean validateNewUserForRegistration(final String newUserName, final String email) {
-        if (findUserByUsername(newUserName) != null) {
+    private User validateNewUserForRegistration(final User userByUsername, final User userByEmail) {
+        if (userByUsername != null) {
             throw new UserExistException(USER_ALREADY_EXIST);
         }
-        if (findUserByEmail(email) != null) {
+        if (userByEmail != null) {
             throw new EmailExistException(USER_WITH_EMAIL_ALREADY_EXIST);
         }
-        return true;
+        return null;
     }
 
-    private boolean validateExistingUser(final String currentUserName, final String email) {
-        if (findUserByUsername(currentUserName) == null) {
+    private User validateExistingUser(final User userByCurrentUsername, final User userByUserName, final User userByEmail) {
+
+        if (userByCurrentUsername == null) {
             throw new UserNotFoundException(USER_DOES_NT_EXIST);
         }
-        if (findUserByEmail(email) == null) {
-            throw new EmailNotFoundException(USER_WITH_EMAIL_DOES_NT_EXIST);
+        if (userByUserName != null && userByUserName.getId() != userByCurrentUsername.getId()) {
+            throw new UserExistException(USER_ALREADY_EXIST);
         }
-        return true;
+        if (userByEmail != null && userByCurrentUsername.getId() != userByEmail.getId()) {
+            throw new EmailNotFoundException(USER_WITH_EMAIL_ALREADY_EXIST);
+        }
+        return userByCurrentUsername;
     }
 
     @Override
     public User findUserByUsername(final String username) {
         log.info("MSG='finding user by', username={}", username);
-        // Check whether the provided username already exist(s)..
-        Optional<User> userOptional = userRepository.findUserByUsername(username);
-        if (userOptional.isPresent()) {
-            throw new UserExistException(USER_WITH_USERNAME_ALREADY_EXIST);
-        }
-        return null;
+        return userRepository.findUserByUsername(username);
     }
 
     @Override
     public User findUserByEmail(final String email) {
         log.info("MSG='finding user by', email={}", email);
         // Check whether the provided user email already exist(s)..
-        Optional<User> userOptional = userRepository.findUserByEmail(email);
-        if (userOptional.isPresent()) {
-            throw new EmailExistException(USER_EMAIL_ALREADY_EXIST);
-        }
-        return null;
+        return userRepository.findUserByEmail(email);
     }
 
     @Override
     public User login(String username, String password) {
         userServiceUtils.authenticateUser(username, password);
         log.info("MSG='User authentication successful !!'");
-        return userRepository.findUserByUsername(username).get();
+        return userRepository.findUserByUsername(username);
     }
 
     @Override
@@ -115,8 +113,10 @@ public class UserServiceImpl implements UserService {
                 "profileImage={}", firstName, lastName, username, email, role, isLocked, isActive, profileImage);
         validUserInformationProvided(EMPTY, firstName, lastName, username, email);
         User user = userServiceUtils.buildUserForAddition(firstName, lastName, username, email, role, isLocked, isActive);
-        User savedUser = userServiceUtils.updateUserWithProfileImage(user, profileImage);
-        return userRepository.save(savedUser);
+        if (profileImage != null) {
+            userServiceUtils.updateUserWithProfileImage(user, profileImage);
+        }
+        return userRepository.save(user);
     }
 
     @Override
@@ -125,28 +125,33 @@ public class UserServiceImpl implements UserService {
         log.info("MSG='updating User', currentUserName={}, newFirstName={}, newLastName={}, newUsername={}, newEmail={}, newRole={}, " +
                         "isLocked={}, isActive={}, profileImage={}", currentUserName, newFirstName, newLastName, newUsername, newEmail,
                 newRole, isLocked, isActive, profileImage);
-        validUserInformationProvided(currentUserName, newFirstName, newLastName, newUsername, newEmail);
-        User user = userServiceUtils.buildUserForUpdate(newFirstName, newLastName, newUsername, newEmail, newRole,
+        User currentUser = validUserInformationProvided(currentUserName, newFirstName, newLastName, newUsername, newEmail);
+        userServiceUtils.buildUserForUpdate(currentUser, newFirstName, newLastName, newUsername, newEmail, newRole,
                 isLocked, isActive);
-        User updatedUser = userRepository.save(user);
-        userServiceUtils.updateUserWithProfileImage(updatedUser, profileImage);
+        User updatedUser = userRepository.save(currentUser);
+        if (profileImage != null) {
+            userServiceUtils.updateUserWithProfileImage(updatedUser, profileImage);
+        }
         return updatedUser;
     }
 
     @Override
     public void deleteUser(long id) {
         log.info("MSG='Deleting user with id', id={}", id);
+        Optional<User> userById = userRepository.findById(id);
+        if (!userById.isPresent()) {
+            throw new UserNotFoundException("User with id=" + id + " doesn't exist !!");
+        }
         userRepository.deleteById(id);
     }
 
     @Override
     public User updateProfileImage(String username, MultipartFile profileImage) throws IOException {
         log.info("MSG='Updating Profile image for user', username={}", username);
-        Optional<User> user = userRepository.findUserByUsername(username);
-        if (!user.isPresent()) {
+        User existingUser = userRepository.findUserByUsername(username);
+        if (existingUser == null) {
             throw new UsernameNotFoundException(USERNAME_DOES_NOT_EXIST);
         }
-        User existingUser = user.get();
         userServiceUtils.updateUserWithProfileImage(existingUser, profileImage);
         return userRepository.save(existingUser);
     }
@@ -154,15 +159,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public void resetPassword(String email) {
         log.info("MSG='Resetting password for the user', email={}", email);
-        Optional<User> optionalUser = userRepository.findUserByEmail(email);
-        if (!optionalUser.isPresent()) {
+        User existingUser = userRepository.findUserByEmail(email);
+        if (existingUser == null) {
             throw new EmailNotFoundException(USER_WITH_EMAIL_DOES_NT_EXIST);
         }
-        User existingUser = optionalUser.get();
-        existingUser.setPassword(RandomStringUtils.randomAlphanumeric(10));
+        String newPassword = RandomStringUtils.randomAlphanumeric(10);
+        existingUser.setPassword(userServiceUtils.getEncodedPassword(newPassword));
         userRepository.save(existingUser);
         emailService.sendPasswordResetEmail(existingUser.getFirstName(), existingUser.getLastName(), existingUser.getUsername(),
-                existingUser.getEmail(), existingUser.getPassword());
+                existingUser.getEmail(), newPassword);
     }
 
     @Override

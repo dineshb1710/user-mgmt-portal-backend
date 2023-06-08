@@ -2,10 +2,12 @@ package com.dineshb.projects.usermgmt.portal.utils;
 
 import com.dineshb.projects.usermgmt.portal.enums.Role;
 import com.dineshb.projects.usermgmt.portal.model.User;
+import com.dineshb.projects.usermgmt.portal.model.response.HttpResponse;
 import com.dineshb.projects.usermgmt.portal.model.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,8 +23,11 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.UUID;
 
+import static com.dineshb.projects.usermgmt.portal.constants.ApplicationConstants.*;
 import static com.dineshb.projects.usermgmt.portal.constants.FileConstants.*;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
 @Component
@@ -33,7 +38,7 @@ public class UserServiceUtils {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
-    private String getEncodedPassword(final String password) {
+    public String getEncodedPassword(final String password) {
         return passwordEncoder.encode(password);
     }
 
@@ -66,6 +71,7 @@ public class UserServiceUtils {
                                      boolean isLocked, boolean isActive) {
         final String password = RandomStringUtils.randomAlphabetic(10);
         return User.builder()
+                .userId(UUID.randomUUID().toString())
                 .firstName(firstName)
                 .lastName(lastName)
                 .username(username)
@@ -80,19 +86,20 @@ public class UserServiceUtils {
                 .build();
     }
 
-    public User buildUserForUpdate(String firstName, String lastName, String username, String email, String role,
+    public User buildUserForUpdate(User currentUser, String firstName, String lastName, String username, String email, String role,
                                    boolean isLocked, boolean isActive) {
-        return User.builder()
-                .firstName(firstName)
-                .lastName(lastName)
-                .username(username)
-                .email(email)
-                .role(getRole(role).name())
-                .authorities(getRole(role).getAuthorities())
-                .isLocked(isLocked)
-                .isActive(isActive)
-                .profileImageUrl(getTemporaryProfileImageUrl(username))
-                .build();
+
+        currentUser.setFirstName(firstName);
+        currentUser.setLastName(lastName);
+        currentUser.setUsername(username);
+        currentUser.setEmail(email);
+        currentUser.setRole(getRole(role).name());
+        currentUser.setAuthorities(getRole(role).getAuthorities());
+        currentUser.setLocked(isLocked);
+        currentUser.setActive(isActive);
+        currentUser.setProfileImageUrl(getTemporaryProfileImageUrl(username));
+
+        return currentUser;
     }
 
     private Role getRole(String role) {
@@ -121,4 +128,23 @@ public class UserServiceUtils {
         return ServletUriComponentsBuilder.fromCurrentContextPath().path(USER_IMAGE_PATH + username + FORWARD_SLASH +
                 username + DOT + JPG_EXTENSION).toUriString();
     }
+
+    public HttpResponse buildHttpResponseForUserDeletion(long id) {
+        return new HttpResponse(HttpStatus.NO_CONTENT.value(), DELETE_REQUEST,
+                getUserDeletedMessage(id), NO_CONTENT, new Date());
+    }
+
+    public HttpResponse buildHttpResponseForPasswordReset(String email) {
+        return new HttpResponse(HttpStatus.OK.value(), PASSWORD_CHANGE_REQUEST,
+                getPasswordResetMessage(email), OK, new Date());
+    }
+
+    private String getUserDeletedMessage(long id) {
+        return String.format(USER_DELETED_WITH_ID, id);
+    }
+
+    private String getPasswordResetMessage(String email) {
+        return String.format(PASSWORD_RESET_MAIL_HAS_BEEN_SENT, email);
+    }
+
 }
